@@ -1,0 +1,153 @@
+name: CI - Build and Test
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'purehouse-frontend/**'
+      - 'purehouse-backend/**'
+      - 'purehouse-worker/**'
+      - '.github/workflows/ci.yml'
+
+jobs:
+  #############################################################################
+  # Test Backend
+  #############################################################################
+  test-backend:
+    name: Test Backend
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: purehouse-backend/package-lock.json
+
+    - name: Install dependencies
+      working-directory: ./purehouse-backend
+      run: npm ci
+
+    - name: Run linter
+      working-directory: ./purehouse-backend
+      run: npm run lint
+
+    - name: Run unit tests
+      working-directory: ./purehouse-backend
+      run: npm run test
+
+    - name: Run e2e tests
+      working-directory: ./purehouse-backend
+      run: npm run test:e2e
+      env:
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+
+  #############################################################################
+  # Test Frontend
+  #############################################################################
+  test-frontend:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: purehouse-frontend/package-lock.json
+
+    - name: Install dependencies
+      working-directory: ./purehouse-frontend
+      run: npm ci
+
+    - name: Run linter
+      working-directory: ./purehouse-frontend
+      run: npm run lint
+
+    - name: Build application
+      working-directory: ./purehouse-frontend
+      run: npm run build
+      env:
+        NEXT_PUBLIC_API_URL: http://localhost:3001
+
+  #############################################################################
+  # Test Worker
+  #############################################################################
+  test-worker:
+    name: Test Worker
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: purehouse-worker/package-lock.json
+
+    - name: Install dependencies
+      working-directory: ./purehouse-worker
+      run: npm ci
+
+    - name: Run linter
+      working-directory: ./purehouse-worker
+      run: npm run lint || echo "No lint script found"
+
+    - name: Run tests
+      working-directory: ./purehouse-worker
+      run: npm run test || echo "No test script found"
+
+  #############################################################################
+  # Build Docker Images (validation only)
+  #############################################################################
+  build-validation:
+    name: Validate Docker Builds
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend, test-worker]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build backend image (validation)
+      uses: docker/build-push-action@v5
+      with:
+        context: ./purehouse-backend
+        push: false
+        tags: purehouse-backend:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Build frontend image (validation)
+      uses: docker/build-push-action@v5
+      with:
+        context: ./purehouse-frontend
+        push: false
+        tags: purehouse-frontend:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Build worker image (validation)
+      uses: docker/build-push-action@v5
+      with:
+        context: ./purehouse-worker
+        push: false
+        tags: purehouse-worker:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max

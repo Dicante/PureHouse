@@ -1,0 +1,64 @@
+# terraform.tfvars
+# This file contains the actual values for variables.
+# DO NOT commit this file to Git if it contains sensitive data!
+
+#############################################################################
+# General Configuration
+#############################################################################
+
+aws_region   = "us-east-2"
+project_name = "purehouse"
+environment  = "production"
+
+#############################################################################
+# VPC Configuration
+#############################################################################
+
+vpc_cidr             = "10.0.0.0/16"
+availability_zones   = ["us-east-2a", "us-east-2b"]
+public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnet_cidrs = ["10.0.10.0/24", "10.0.20.0/24"]
+enable_nat_gateway   = true
+single_nat_gateway   = true
+
+#############################################################################
+# EKS Configuration
+#############################################################################
+
+kubernetes_version     = "1.28"
+node_instance_types    = ["t3.small"]
+node_desired_size      = 2
+node_min_size          = 2
+node_max_size          = 4
+node_disk_size         = 20
+enable_cluster_logging = false
+
+#############################################################################
+# ECR Configuration
+#############################################################################
+
+ecr_repositories          = ["frontend", "backend", "worker"]
+ecr_image_tag_mutability  = "MUTABLE"
+ecr_scan_on_push          = true
+ecr_lifecycle_policy_days = 7
+ecr_max_image_count       = 10
+
+#############################################################################
+# Kubernetes Configuration
+#############################################################################
+
+# IMPORTANT: Set this value before running terraform apply
+# Get it from MongoDB Atlas connection string
+mongodb_uri = "mongodb+srv://username:password@cluster.mongodb.net/purehouse?retryWrites=true&w=majority"
+
+install_alb_controller = true
+
+#############################################################################
+# Additional Tags
+#############################################################################
+
+tags = {
+  Owner       = "DevOps Team"
+  CostCenter  = "Engineering"
+  Terraform   = "true"
+}
