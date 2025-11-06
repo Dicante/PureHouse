@@ -137,12 +137,14 @@ PureHouse/
 ### DevOps & Infrastructure
 
 **Terraform Modules** (Reusable, Environment-Agnostic)
+
 - `vpc`: Creates network with public/private subnets, NAT, IGW
 - `eks`: Provisions managed Kubernetes with node groups and IRSA
 - `ecr`: Sets up private Docker registries with lifecycle policies
 - `kubernetes`: Deploys ALB controller, secrets, and namespaces
 
 **CI/CD Pipeline** (GitHub Actions with OIDC)
+
 ```yaml
 # Secure authentication without stored credentials
 CI: Test → Lint → Build validation
@@ -150,6 +152,7 @@ CD: Build images → Push to ECR → Deploy to EKS
 ```
 
 **Kubernetes Configuration**
+
 - 2 replicas for frontend/backend (high availability)
 - Resource limits prevent pod resource exhaustion
 - Rolling updates with health checks (zero downtime)
@@ -158,18 +161,21 @@ CD: Build images → Push to ECR → Deploy to EKS
 ### Application Stack
 
 **Frontend** - Next.js 14 (React)
+
 - Server-side rendering for SEO
 - API routes with rewrites (proxy pattern)
 - TypeScript for type safety
 - Tailwind CSS for styling
 
 **Backend** - NestJS (Node.js)
+
 - RESTful API with decorators
 - MongoDB integration with Mongoose
 - Health checks at `/api/health`
 - Worker HTTP client for async tasks
 
 **Worker** - Express.js
+
 - Lightweight processing service
 - Colorized logging for visibility
 - Health endpoint for K8s probes
@@ -178,6 +184,7 @@ CD: Build images → Push to ECR → Deploy to EKS
 ### Cost Optimization Strategy
 
 Implemented **on-demand infrastructure** approach:
+
 - Total cost: ~$151/month or ~$0.21/hour
 - With $120 AWS credits = ~600 hours of demo time
 - Automated scripts for quick deploy/destroy
@@ -212,17 +219,16 @@ Implemented **on-demand infrastructure** approach:
 ## 🔗 Project Links
 
 - **Live Demo**: *[Currently deployed on-demand for demos]*
-- **Repository**: [github.com/YOUR_USERNAME/PureHouse](https://github.com/YOUR_USERNAME/PureHouse)
+- **Repository**: [github.com/Dicante/PureHouse](https://github.com/Dicante/PureHouse)
 
 ## 👤 Author
 
-**Your Name**
+**Julian Dicante**
 
-DevOps Engineer | Cloud Architecture | Kubernetes
+Aspiring DevOps Engineer | Cloud Architecture | Kubernetes
 
-- 🔗 LinkedIn: [linkedin.com/in/your-profile](https://linkedin.com/in/your-profile)
-- 💼 Portfolio: [your-portfolio.com](https://your-portfolio.com)
-- 📧 Email: your.email@example.com
+- 🔗 LinkedIn: [linkedin.com/in/julian-dicante](linkedin.com/in/julian-dicante)
+- 📧 Email: juliandicante@outlook.com
 
 ---
 
