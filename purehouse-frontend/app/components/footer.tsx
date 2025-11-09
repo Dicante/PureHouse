@@ -8,12 +8,12 @@ function Footer() {
           {/* Left side: Name and info */}
           <div className="flex flex-col items-center lg:items-start lg:w-3/4">
             <h3 className="text-2xl lg:text-[2rem] font-extrabold tracking-tighter leading-tight text-center lg:text-left mb-2 text-black">
-              PureHouse - A Student Project For Learning Purposes
+              PureHouse - Production DevOps Portfolio
             </h3>
             <div className="flex flex-col lg:flex-row items-center lg:items-baseline mb-4 lg:gap-4">
               <span className="text-[1rem] lg:text-xl text-center lg:text-left">Julian Dicante</span>
               <span className="text-[0.8rem] lg:text-[1.1rem] text-center lg:text-left lg:ml-2 mt-1 lg:mt-0">
-                Software Engineering
+                DevOps Engineer | Cloud Architecture
               </span>
             </div>
           </div>
