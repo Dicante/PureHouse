@@ -16,13 +16,8 @@ resource "aws_eks_cluster" "main" {
     security_group_ids      = [var.cluster_security_group_id]
   }
 
-  # Enable control plane logging (optional, can be disabled to save costs)
-  dynamic "enabled_cluster_log_types" {
-    for_each = var.enable_cluster_logging ? [1] : []
-    content {
-      log_types = var.cluster_log_types
-    }
-  }
+  # Enable control plane logging (disabled by default to save costs)
+  enabled_cluster_log_types = var.enable_cluster_logging ? var.cluster_log_types : []
 
   tags = merge(
     {

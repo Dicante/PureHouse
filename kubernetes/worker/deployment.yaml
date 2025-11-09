@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: worker
-        image: ACCOUNT_ID.dkr.ecr.us-east-2.amazonaws.com/purehouse-production-worker:latest
+        image: 914970129822.dkr.ecr.us-east-2.amazonaws.com/purehouse-production-worker:latest
         ports:
         - containerPort: 3002
           name: http

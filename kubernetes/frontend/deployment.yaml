@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: ACCOUNT_ID.dkr.ecr.us-east-2.amazonaws.com/purehouse-production-frontend:latest
+        image: 914970129822.dkr.ecr.us-east-2.amazonaws.com/purehouse-production-frontend:latest
         ports:
         - containerPort: 3000
           name: http

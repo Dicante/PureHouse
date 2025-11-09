@@ -8,7 +8,7 @@ resource "aws_eks_node_group" "main" {
   cluster_name    = aws_eks_cluster.main.name
   node_group_name = "${var.project_name}-${var.environment}-node-group"
   node_role_arn   = aws_iam_role.eks_nodes.arn
-  subnet_ids      = var.private_subnet_ids
+  subnet_ids      = var.public_subnet_ids
 
   # Scaling configuration
   scaling_config {
@@ -24,9 +24,6 @@ resource "aws_eks_node_group" "main" {
 
   # Instance types
   instance_types = var.node_instance_types
-
-  # Disk size
-  disk_size = var.node_disk_size
 
   # Launch template configuration
   launch_template {
@@ -66,8 +63,32 @@ resource "aws_launch_template" "eks_nodes" {
   # Use latest EKS-optimized AMI
   image_id = data.aws_ssm_parameter.eks_ami.value
 
-  # Network configuration
-  vpc_security_group_ids = [var.node_security_group_id]
+  # User data to bootstrap the node and join it to the cluster
+  user_data = base64encode(templatefile("${path.module}/user-data.sh", {
+    cluster_name        = aws_eks_cluster.main.name
+    cluster_endpoint    = aws_eks_cluster.main.endpoint
+    cluster_ca          = aws_eks_cluster.main.certificate_authority[0].data
+    bootstrap_extra_args = ""
+  }))
+
+  # Network interface configuration (assign public IP for public subnets)
+  network_interfaces {
+    associate_public_ip_address = true
+    delete_on_termination       = true
+    security_groups             = [var.node_security_group_id]
+  }
+
+  # Block device mapping (disk configuration)
+  block_device_mappings {
+    device_name = "/dev/xvda"
+
+    ebs {
+      volume_size           = var.node_disk_size
+      volume_type           = "gp3"
+      delete_on_termination = true
+      encrypted             = true
+    }
+  }
 
   # Instance metadata service configuration
   metadata_options {

@@ -41,6 +41,17 @@ resource "aws_security_group_rule" "cluster_to_node" {
   source_security_group_id = aws_security_group.eks_nodes.id
 }
 
+# Allow nodes to communicate with cluster API (CRITICAL for node join)
+resource "aws_security_group_rule" "node_to_cluster_ingress" {
+  description              = "Allow worker nodes to communicate with cluster API"
+  type                     = "ingress"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.eks_cluster.id
+  source_security_group_id = aws_security_group.eks_nodes.id
+}
+
 #############################################################################
 # Security Group for EKS Worker Nodes
 #############################################################################

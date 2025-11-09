@@ -30,6 +30,11 @@ variable "cluster_certificate_authority_data" {
   sensitive   = true
 }
 
+variable "node_role_arn" {
+  description = "ARN of the IAM role for EKS worker nodes (for aws-auth ConfigMap)"
+  type        = string
+}
+
 variable "cluster_oidc_issuer_url" {
   description = "The URL on the EKS cluster OIDC Issuer"
   type        = string

@@ -114,6 +114,9 @@ module "ecr" {
 #############################################################################
 # Kubernetes Module
 #############################################################################
+# Note: Cannot use depends_on with this module because it contains
+# its own provider configuration. Dependency is handled through
+# passing the cluster_endpoint and other values from module.eks.
 
 module "kubernetes" {
   source = "../../modules/kubernetes"
@@ -124,11 +127,10 @@ module "kubernetes" {
   cluster_endpoint                   = module.eks.cluster_endpoint
   cluster_certificate_authority_data = module.eks.cluster_certificate_authority_data
   cluster_oidc_issuer_url            = module.eks.cluster_oidc_issuer_url
+  node_role_arn                      = module.eks.node_role_arn
   vpc_id                             = module.vpc.vpc_id
   mongodb_uri                        = var.mongodb_uri
   install_alb_controller             = var.install_alb_controller
 
   tags = var.tags
-
-  depends_on = [module.eks]
 }

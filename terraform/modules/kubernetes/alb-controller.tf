@@ -254,6 +254,22 @@ resource "aws_iam_policy" "alb_controller" {
       {
         Effect = "Allow"
         Action = [
+          "elasticloadbalancing:AddTags"
+        ]
+        Resource = [
+          "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*",
+          "arn:aws:elasticloadbalancing:*:*:loadbalancer/net/*/*",
+          "arn:aws:elasticloadbalancing:*:*:loadbalancer/app/*/*"
+        ]
+        Condition = {
+          Null = {
+            "aws:RequestTag/elbv2.k8s.aws/cluster" = "false"
+          }
+        }
+      },
+      {
+        Effect = "Allow"
+        Action = [
           "elasticloadbalancing:AddTags",
           "elasticloadbalancing:RemoveTags"
         ]

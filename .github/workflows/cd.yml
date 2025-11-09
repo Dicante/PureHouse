@@ -13,6 +13,7 @@ on:
 
 env:
   AWS_REGION: us-east-2
+  AWS_ACCOUNT_ID: 914970129822
   EKS_CLUSTER_NAME: purehouse-production
 
 jobs:
@@ -38,7 +39,7 @@ jobs:
     - name: Configure AWS credentials using OIDC
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-role
+        role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/github-actions-role
         aws-region: ${{ env.AWS_REGION }}
 
     - name: Login to Amazon ECR
@@ -111,7 +112,7 @@ jobs:
     - name: Configure AWS credentials using OIDC
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-role
+        role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/github-actions-role
         aws-region: ${{ env.AWS_REGION }}
 
     - name: Update kubeconfig
@@ -121,7 +122,7 @@ jobs:
     - name: Update image tags in manifests
       run: |
         # Replace ACCOUNT_ID placeholder with actual AWS account ID
-        find kubernetes/ -name "*.yaml" -type f -exec sed -i "s/ACCOUNT_ID/${{ secrets.AWS_ACCOUNT_ID }}/g" {} +
+        find kubernetes/ -name "*.yaml" -type f -exec sed -i "s/ACCOUNT_ID/${{ env.AWS_ACCOUNT_ID }}/g" {} +
         
         # Update backend image tag
         sed -i "s|purehouse-production-backend:latest|purehouse-production-backend:${{ github.sha }}|g" kubernetes/backend/deployment.yaml
