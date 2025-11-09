@@ -393,5 +393,60 @@ git push origin main
 
 ---
 
+## 🔧 EKS Configuration for GitHub Actions
+
+### aws-auth ConfigMap Setup
+
+For GitHub Actions to deploy to EKS, the IAM role must be added to the cluster's `aws-auth` ConfigMap. This is **automatically configured in Terraform** at:
+
+```
+terraform/modules/kubernetes/configmaps.tf
+```
+
+**Configuration**:
+```yaml
+mapRoles:
+  # EKS worker nodes
+  - rolearn: arn:aws:iam::ACCOUNT_ID:role/eks-nodes-role
+    username: system:node:{{EC2PrivateDNSName}}
+    groups:
+      - system:bootstrappers
+      - system:nodes
+  
+  # GitHub Actions CI/CD
+  - rolearn: arn:aws:iam::914970129822:role/github-actions-role
+    username: github-actions
+    groups:
+      - system:masters  # Full cluster access for deployments
+```
+
+**Why this is needed**:
+- EKS uses IAM for authentication
+- The `aws-auth` ConfigMap maps IAM roles to Kubernetes RBAC
+- Without this, GitHub Actions gets "unauthorized" errors
+
+**Automatic in Terraform**: This configuration is applied during `./scripts/deploy.sh`, so you **never need to configure it manually**.
+
+### Troubleshooting
+
+**If GitHub Actions gets authentication errors**:
+
+```bash
+# Verify the role is in aws-auth
+kubectl get configmap aws-auth -n kube-system -o yaml | grep github-actions
+
+# Expected output:
+# rolearn: arn:aws:iam::914970129822:role/github-actions-role
+# username: github-actions
+```
+
+**If missing** (should not happen with Terraform):
+```bash
+# Re-apply Terraform
+cd terraform/environments/production
+terraform apply -target=module.kubernetes.kubernetes_config_map_v1_data.aws_auth
+```
+
+---
+
 *This CI/CD implementation showcases modern DevOps practices with security-first design, demonstrating production-ready automation skills.*
-# GitHub Actions EKS Access Configured

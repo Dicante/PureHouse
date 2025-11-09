@@ -13,6 +13,7 @@ resource "kubernetes_config_map_v1_data" "aws_auth" {
 
   data = {
     mapRoles = yamlencode([
+      # EKS worker nodes
       {
         rolearn  = var.node_role_arn
         username = "system:node:{{EC2PrivateDNSName}}"
@@ -20,6 +21,12 @@ resource "kubernetes_config_map_v1_data" "aws_auth" {
           "system:bootstrappers",
           "system:nodes"
         ]
+      },
+      # GitHub Actions role for CI/CD
+      {
+        rolearn  = "arn:aws:iam::914970129822:role/github-actions-role"
+        username = "github-actions"
+        groups   = ["system:masters"]
       }
     ])
     
