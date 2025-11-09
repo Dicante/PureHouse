@@ -62,28 +62,29 @@ AWS Cloud (us-east-2 - Ohio)
 ```
 VPC CIDR: 10.0.0.0/16
 
-┌─────────────────────────────────────────────────────┐
-│                       VPC                            │
-│                                                      │
-│  AZ: us-east-2a             AZ: us-east-2b          │
-│  ┌────────────────┐         ┌────────────────┐     │
-│  │ Public Subnet  │         │ Public Subnet  │     │
-│  │ 10.0.1.0/24    │         │ 10.0.2.0/24    │     │
-│  │                │         │                │     │
-│  │ - IGW Access   │         │ - IGW Access   │     │
-│  │ - NAT Gateway  │         │                │     │
-│  │ - ALB (HA)     │         │ - ALB (HA)     │     │
-│  └────────────────┘         └────────────────┘     │
-│                                                      │
-│  ┌────────────────┐         ┌────────────────┐     │
-│  │ Private Subnet │         │ Private Subnet │     │
-│  │ 10.0.10.0/24   │         │ 10.0.20.0/24   │     │
-│  │ EKS Nodes      │         │ EKS Nodes      │     │
-│  └────────────────┘         └────────────────┘     │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────┐
+│                       VPC                       │
+│                                                 │
+│  AZ: us-east-2a             AZ: us-east-2b      │
+│  ┌────────────────┐         ┌────────────────┐  │
+│  │ Public Subnet  │         │ Public Subnet  │  │
+│  │ 10.0.1.0/24    │         │ 10.0.2.0/24    │  │
+│  │                │         │                │  │
+│  │ - IGW Access   │         │ - IGW Access   │  │
+│  │ - NAT Gateway  │         │                │  │
+│  │ - ALB (HA)     │         │ - ALB (HA)     │  │
+│  └────────────────┘         └────────────────┘  │
+│                                                 │
+│  ┌────────────────┐         ┌────────────────┐  │
+│  │ Private Subnet │         │ Private Subnet │  │
+│  │ 10.0.10.0/24   │         │ 10.0.20.0/24   │  │
+│  │ EKS Nodes      │         │ EKS Nodes      │  │
+│  └────────────────┘         └────────────────┘  │
+└─────────────────────────────────────────────────┘
 ```
 
 **Design Rationale:**
+
 - **Multi-AZ deployment** - Survives single AZ failures
 - **Private node placement** - Enhanced security (nodes don't have public IPs)
 - **NAT Gateway** - Allows private nodes to access internet for updates
@@ -93,20 +94,21 @@ VPC CIDR: 10.0.0.0/16
 
 ```
 ┌──────────────────────────────────────────┐
-│         EKS Control Plane                 │
-│     (AWS Managed - Multi-AZ HA)          │
-└──────────────────┬───────────────────────┘
-                   │
-        ┌──────────┴──────────┐
-        │                     │
-   ┌────▼─────┐         ┌────▼─────┐
-   │  Node 1  │         │  Node 2  │
-   │ t3.small │         │ t3.small │
-   │ AZ: 2a   │         │ AZ: 2b   │
-   └──────────┘         └──────────┘
+│           EKS Control Plane              │
+│       (AWS Managed - Multi-AZ HA)        │
+└────────────────────┬─────────────────────┘
+                     │
+          ┌──────────┴──────────┐
+          │                     │
+    ┌─────▼─────┐         ┌─────▼─────┐
+    │  Node 1   │         │   Node 2  │
+    │  t3.small │         │  t3.small │
+    │  AZ: 2a   │         │  AZ: 2b   │
+    └───────────┘         └───────────┘
 ```
 
 **Configuration:**
+
 - **Kubernetes Version**: 1.33 (standard support until July 2026)
 - **Node Type**: t3.small (2 vCPU, 2GB RAM)
 - **Scaling**: Min 2, Desired 2, Max 4
@@ -119,22 +121,23 @@ VPC CIDR: 10.0.0.0/16
 
 ```
 ┌──────────────────────────────────────────────────┐
-│            AWS Application Load Balancer          │
-│          (Path-based routing to services)         │
+│           AWS Application Load Balancer          │
+│         (Path-based routing to services)         │
 └───────────┬──────────────────────────────────────┘
             │
     ┌───────┼────────┐
     │       │        │
     ▼       ▼        ▼
-┌─────┐ ┌─────┐ ┌─────┐
-│Front│ │Back │ │Work │      ┌──────────┐
-│ end │─│ end │─│ er  │      │ MongoDB  │
-│Next │ │Nest │ │Expr │─────▶│  Atlas   │
-│ JS  │ │ JS  │ │ ess │      │ (Cloud)  │
-└─────┘ └─────┘ └─────┘      └──────────┘
+┌─────┐  ┌─────┐  ┌─────┐
+│Front│  │Back │  │Work │      ┌──────────┐
+│ end │──│ end │──│ er  │      │ MongoDB  │
+│Next │  │Nest │  │Expr │─────▶│  Atlas   │
+│ JS  │  │ JS  │  │ ess │      │ (Cloud)  │
+└─────┘  └─────┘  └─────┘      └──────────┘
 ```
 
 **Key Architectural Decisions:**
+
 - **Frontend**: Next.js 14 with API rewrites for seamless backend communication
 - **Backend**: NestJS for structured, scalable API with TypeScript
 - **Worker**: Separate Express service for async tasks (decoupled for horizontal scaling)
@@ -162,13 +165,14 @@ Namespace: purehouse
 
 **Resource Allocation Strategy:**
 
-| Service | Replicas | CPU Request | Memory Request | Reasoning |
-|---------|----------|-------------|----------------|-----------|
-| Frontend | 2 | 100m | 128Mi | High traffic, needs HA |
-| Backend | 2 | 100m | 256Mi | Stateless API, horizontal scaling |
-| Worker | 1 | 50m | 128Mi | Async tasks, not user-facing |
+| Service  | Replicas | CPU Request | Memory Request | Reasoning                         |
+| -------- | -------- | ----------- | -------------- | --------------------------------- |
+| Frontend | 2        | 100m        | 128Mi          | High traffic, needs HA            |
+| Backend  | 2        | 100m        | 256Mi          | Stateless API, horizontal scaling |
+| Worker   | 1        | 50m         | 128Mi          | Async tasks, not user-facing      |
 
 **Health Check Implementation:**
+
 - **Liveness probes**: Detect and restart crashed containers
 - **Readiness probes**: Control traffic routing during deployments
 - **Startup probes**: Handle slow application startup
@@ -198,6 +202,7 @@ terraform/
 **Responsibility**: Network infrastructure
 
 **Resources Created**:
+
 - VPC with DNS support
 - 2 public + 2 private subnets
 - Internet Gateway
@@ -206,6 +211,7 @@ terraform/
 - Security groups (cluster, nodes, ALB)
 
 **Key Variables**:
+
 ```hcl
 variable "vpc_cidr" {
   default = "10.0.0.0/16"
@@ -231,12 +237,14 @@ variable "single_nat_gateway" {
 **Responsibility**: Kubernetes cluster
 
 **Resources Created**:
+
 - EKS cluster with IAM role
 - Node group with launch template
 - IRSA (IAM Roles for Service Accounts)
 - Add-ons (VPC-CNI, CoreDNS, kube-proxy)
 
 **Key Variables**:
+
 ```hcl
 variable "kubernetes_version" {
   default = "1.33"  # Changed from 1.31 to avoid Extended Support charges
@@ -258,11 +266,13 @@ variable "node_desired_size" {
 **Responsibility**: Container registries
 
 **Resources Created**:
+
 - 3 ECR repositories (frontend, backend, worker)
 - Lifecycle policies (keep last 10 images)
 - Repository policies for cross-account access
 
 **Key Features**:
+
 - Image scanning on push
 - Tag mutability: MUTABLE (allows `latest` tag updates)
 - Automatic cleanup of old images
@@ -274,6 +284,7 @@ variable "node_desired_size" {
 **Responsibility**: K8s-level resources deployed via Terraform
 
 **Resources Created**:
+
 - Namespace (`purehouse`)
 - ConfigMaps (aws-auth for GitHub Actions access)
 - Secrets (MongoDB URI from Terraform variable)
@@ -282,6 +293,7 @@ variable "node_desired_size" {
 **Dependencies**: Requires EKS cluster to exist
 
 **Critical Configuration - aws-auth ConfigMap**:
+
 ```yaml
 mapRoles:
   # EKS worker nodes
@@ -315,6 +327,7 @@ terraform {
 ```
 
 **Benefits:**
+
 - Team collaboration ready
 - Prevents concurrent modifications via DynamoDB locking
 - State versioning enabled
@@ -322,15 +335,15 @@ terraform {
 
 ### Technical Decisions Made
 
-| Decision | Alternative Considered | Reasoning |
-|----------|----------------------|-----------|
-| **EKS over EC2** | Self-managed K8s on EC2 | Managed control plane reduces ops overhead |
-| **MongoDB Atlas** | Self-hosted in cluster | External DB simplifies cluster destroy/recreate |
-| **Terraform** | CloudFormation, Pulumi | Industry standard, multi-cloud transferable |
-| **K8s 1.33** | 1.31, 1.34 | Standard support until Jul 2026, saves $22.30/deploy |
-| **Private nodes** | Public with Security Groups | Enhanced security, production best practice |
-| **t3.small nodes** | t3.medium | Adequate for demo, 50% cost savings |
-| **ALB Ingress** | NGINX Ingress | Native AWS integration, easier SSL management |
+| Decision                 | Alternative Considered      | Reasoning                                            |
+| ------------------------ | --------------------------- | ---------------------------------------------------- |
+| **EKS over EC2**   | Self-managed K8s on EC2     | Managed control plane reduces ops overhead           |
+| **MongoDB Atlas**  | Self-hosted in cluster      | External DB simplifies cluster destroy/recreate      |
+| **Terraform**      | CloudFormation, Pulumi      | Industry standard, multi-cloud transferable          |
+| **K8s 1.33**       | 1.31, 1.34                  | Standard support until Jul 2026, saves $22.30/deploy |
+| **Private nodes**  | Public with Security Groups | Enhanced security, production best practice          |
+| **t3.small nodes** | t3.medium                   | Adequate for demo, 50% cost savings                  |
+| **ALB Ingress**    | NGINX Ingress               | Native AWS integration, easier SSL management        |
 
 ---
 
@@ -343,12 +356,12 @@ Implemented **two-stage pipeline** using GitHub Actions with modern OIDC authent
 ### Pipeline Architecture
 
 ```
-┌─────────────┐
-│ Git Push to │
-│    main     │
-└──────┬──────┘
-       │
-       ▼
+  ┌─────────────┐
+  │ Git Push to │
+  │    main     │
+  └──────┬──────┘
+         │
+         ▼
 ┌─────────────────┐
 │  CI Workflow    │
 │ (Pull Requests) │
@@ -357,9 +370,9 @@ Implemented **two-stage pipeline** using GitHub Actions with modern OIDC authent
 │ 2. Run tests    │
 │ 3. Validate     │
 │    builds       │
-└──────┬──────────┘
-       │
-       ▼
+└────────┬────────┘
+         │
+         ▼
 ┌─────────────────┐
 │  CD Workflow    │
 │ (Main branch)   │
@@ -376,6 +389,7 @@ Implemented **two-stage pipeline** using GitHub Actions with modern OIDC authent
 ### OIDC Authentication (Security Best Practice)
 
 **Traditional Approach (Anti-pattern)**:
+
 ```yaml
 # ❌ Long-lived credentials stored in GitHub
 secrets:
@@ -384,6 +398,7 @@ secrets:
 ```
 
 **Issues:**
+
 - Credentials can be stolen if leaked
 - Manual rotation required
 - No audit trail
@@ -431,6 +446,7 @@ steps:
 ```
 
 **Benefits:**
+
 - ✅ No stored credentials
 - ✅ Automatic expiration (1 hour)
 - ✅ Audit trail via CloudTrail
@@ -443,19 +459,20 @@ steps:
 **Jobs**:
 
 1. **test-backend**
+
    - Install dependencies
    - Run Jest unit tests
    - Run Supertest e2e tests
-
 2. **test-frontend**
+
    - Install dependencies
    - Build Next.js (validates TypeScript)
-
 3. **test-worker**
+
    - Install dependencies
    - Run tests
-
 4. **validate-terraform** (optional)
+
    - `terraform fmt -check`
    - `terraform validate`
 
@@ -468,6 +485,7 @@ steps:
 **Jobs**:
 
 **1. build-and-push**
+
 ```yaml
 Steps:
 1. Checkout code
@@ -481,6 +499,7 @@ Steps:
 ```
 
 **2. deploy**
+
 ```yaml
 Steps:
 1. Configure AWS credentials (OIDC)
@@ -504,6 +523,7 @@ strategy:
 ```
 
 **Flow**:
+
 1. Create new pod with new image
 2. Wait for readiness probe to pass
 3. Route traffic to new pod
@@ -523,32 +543,36 @@ Created **4 production-ready automation scripts** with comprehensive error handl
 **Purpose**: Initialize AWS resources required for Terraform state management and CI/CD.
 
 **What it creates:**
+
 - **S3 Bucket**: `purehouse-terraform-state-us-east-2`
+
   - Versioning enabled for state history
   - Server-side encryption (AES256)
   - Lifecycle policy for old versions
-  
 - **DynamoDB Table**: `purehouse-terraform-lock`
+
   - Primary key: `LockID`
   - Prevents concurrent Terraform operations
   - Pay-per-request billing
-  
 - **OIDC Provider**: For GitHub Actions
+
   - URL: `https://token.actions.githubusercontent.com`
   - Thumbprint: GitHub's SSL certificate fingerprint
   - Enables passwordless GitHub → AWS authentication
-  
 - **IAM Role**: `github-actions-role`
+
   - Trust policy allows GitHub Actions to assume role
   - Permissions for EKS, ECR, Terraform operations
   - No long-lived credentials needed
 
 **When to run:**
+
 - Once before first deployment
 - After complete infrastructure destruction (mode 2)
 - When switching AWS accounts/regions
 
 **Usage:**
+
 ```bash
 ./scripts/setup-aws.sh
 # Interactive: confirms AWS account, creates resources
@@ -562,16 +586,19 @@ Created **4 production-ready automation scripts** with comprehensive error handl
 **Workflow:**
 
 **Phase 1: Pre-flight Checks**
+
 - Validates AWS credentials (`aws sts get-caller-identity`)
 - Checks MongoDB URI configuration
 - Verifies required tools (terraform, kubectl, docker)
 
 **Phase 2: Docker Build** (3 options)
+
 - **Option 1 - Skip**: Use existing images in ECR (fastest, 0 min)
 - **Option 2 - Standard**: Build locally and push (~15 min)
 - **Option 3 - Buildx**: Multi-arch build for AMD64 (~20 min, required for t3.small)
 
 **Phase 3: Terraform Deployment**
+
 - Initializes backend with S3/DynamoDB
 - Creates execution plan (`tfplan`)
 - **Applies with automatic retry logic**:
@@ -583,16 +610,19 @@ Created **4 production-ready automation scripts** with comprehensive error handl
   ```
 
 **Phase 4: Kubernetes Configuration**
+
 - Auto-configures kubectl with cluster credentials
 - Verifies node connectivity
 - Displays node status
 
 **Phase 5: Application Deployment**
+
 - Applies all Kubernetes manifests
 - Waits for rollout completion with timeout
 - Extracts and displays ALB URL
 
 **Features:**
+
 - ✅ 100% automated, no manual intervention
 - ✅ Automatic retry for EKS aws-auth timing issues (most common problem)
 - ✅ Cost warning before expensive resource creation
@@ -600,6 +630,7 @@ Created **4 production-ready automation scripts** with comprehensive error handl
 - ✅ Safe error handling at each step
 
 **Usage:**
+
 ```bash
 ./scripts/deploy.sh
 
@@ -616,6 +647,7 @@ Created **4 production-ready automation scripts** with comprehensive error handl
 **Purpose**: Intelligently destroy AWS resources with two modes for different use cases.
 
 **Pre-Cleanup Phase** (Critical for success):
+
 ```bash
 1. Check if kubectl can connect to cluster
 2. Delete all Ingress resources (releases ALB)
@@ -625,6 +657,7 @@ Created **4 production-ready automation scripts** with comprehensive error handl
 ```
 
 **Why Pre-Cleanup is Critical:**
+
 - Kubernetes Ingress creates AWS ALB via controller
 - ALB has dependencies (Target Groups, Security Groups)
 - TargetGroupBindings have finalizers that block deletion
@@ -634,6 +667,7 @@ Created **4 production-ready automation scripts** with comprehensive error handl
 **Mode 1: Destroy Expensive Resources Only** (~7 minutes)
 
 Destroys:
+
 - ✅ Kubernetes namespace and all resources
 - ✅ EKS cluster and control plane ($73/month saved)
 - ✅ EC2 worker nodes ($30/month saved)
@@ -641,24 +675,27 @@ Destroys:
 - ✅ NAT Gateway ($32/month saved)
 
 Keeps:
+
 - ✅ VPC and subnets
 - ✅ ECR repositories with images (enables fast redeploy)
 - ✅ S3 Terraform state
 - ✅ DynamoDB lock table
 - ✅ Security Groups
 
-**Result**: $153/month → $0.01/month  
+**Result**: $153/month → $0.01/month
 **Redeploy time**: ~10 minutes (uses existing Docker images)
 
 **Mode 2: Destroy Everything** (~10 minutes)
 
 Destroys everything from Mode 1 plus:
+
 - VPC, subnets, route tables
 - ECR repositories and all images
 - Security Groups
 - Internet Gateway
 
 Does NOT destroy (manual safety):
+
 - S3 Terraform state bucket
 - DynamoDB lock table
 - OIDC provider
@@ -669,6 +706,7 @@ Does NOT destroy (manual safety):
 **Terraform Fallback Logic:**
 
 If Terraform times out (common with EKS deletion):
+
 ```bash
 1. Attempt terraform destroy with target
 2. If fails, fallback to aws eks delete-cluster (AWS CLI)
@@ -678,6 +716,7 @@ If Terraform times out (common with EKS deletion):
 ```
 
 **Usage:**
+
 ```bash
 ./scripts/destroy.sh
 
@@ -696,18 +735,21 @@ If Terraform times out (common with EKS deletion):
 **Information Displayed:**
 
 **1. AWS Infrastructure**
+
 - EKS cluster status and Kubernetes version
 - EC2 worker node count
 - NAT Gateway status (detects cost-saving mode)
 - ALB count
 
 **2. Kubernetes Status** (if cluster accessible)
+
 - Node list with status and version
 - Pods in namespace with ready state
 - Services and their endpoints
 - Ingress with ALB URL
 
 **3. Cost Estimation**
+
 - EKS: $0.10/hour ($73/month)
 - EC2 nodes: $0.042/hour per t3.small
 - ALB: $0.025/hour per load balancer
@@ -715,11 +757,13 @@ If Terraform times out (common with EKS deletion):
 - **Total hourly and monthly costs**
 
 **4. Quick Commands**
+
 - Pre-formatted kubectl commands for logs
 - Port-forward examples
 - Destroy command reminder
 
 **Features:**
+
 - ✅ Works with or without active cluster
 - ✅ Detects cost-saving mode (no NAT Gateway)
 - ✅ Uses `bc` for precise cost calculations
@@ -727,6 +771,7 @@ If Terraform times out (common with EKS deletion):
 - ✅ Handles connection failures gracefully
 
 **Usage:**
+
 ```bash
 ./scripts/status.sh
 # No arguments needed
@@ -741,10 +786,12 @@ If Terraform times out (common with EKS deletion):
 ### Secrets Management
 
 **Kubernetes Secrets** for runtime:
+
 - MongoDB connection string (base64 encoded)
 - Service-to-service tokens (if needed)
 
 **GitHub Secrets** for CI/CD:
+
 - `AWS_ACCOUNT_ID` (not sensitive, but parameterized)
 - `MONGODB_URI` (sensitive, injected at deploy time)
 
@@ -753,6 +800,7 @@ If Terraform times out (common with EKS deletion):
 ### IAM Role Design (Least Privilege)
 
 **GitHub Actions Role**:
+
 ```json
 Permissions:
 ├── ECR: PushImage, GetAuthorizationToken
@@ -761,6 +809,7 @@ Permissions:
 ```
 
 **EKS Cluster Role**:
+
 ```json
 Permissions:
 ├── Create/manage ENIs and security groups
@@ -769,6 +818,7 @@ Permissions:
 ```
 
 **Node Group Role**:
+
 ```json
 Permissions:
 ├── Pull images from ECR
@@ -803,16 +853,16 @@ ALB Security Group:
 
 ### Monthly Cost Breakdown (K8s 1.33)
 
-| Service | Configuration | Cost/Hour | Monthly Cost | Optimization |
-|---------|--------------|-----------|--------------|--------------|
-| EKS Control Plane | 1 cluster | $0.10 | $73.00 | Standard support (was $0.50 with v1.31) |
-| EC2 Instances | 2× t3.small | $0.084 | $61.00 | Right-sized, spot-ready |
-| NAT Gateway | 1 gateway | $0.045 | $32.00 | Single AZ, or removable |
-| ALB | 1 load balancer | $0.025 | $18.00 | Path-based routing |
-| ECR Storage | ~5 GB | - | $0.50 | Lifecycle policies |
-| VPC (IPs, etc) | Public IPs | $0.005 | $3.50 | In-use vs idle pricing |
-| S3 + DynamoDB | State | - | $0.01 | Minimal data |
-| **Total** | | **~$0.27/hr** | **~$153/mo** | **On-demand destroy strategy** |
+| Service           | Configuration   | Cost/Hour                                | Monthly Cost                            | Optimization       |
+| ----------------- | --------------- | ---------------------------------------- | --------------------------------------- | ------------------ |
+| EKS Control Plane | 1 cluster       | $0.10 | $73.00                           | Standard support (was $0.50 with v1.31) |                    |
+| EC2 Instances     | 2× t3.small    | $0.084 | $61.00                          | Right-sized, spot-ready                 |                    |
+| NAT Gateway       | 1 gateway       | $0.045 | $32.00                          | Single AZ, or removable                 |                    |
+| ALB               | 1 load balancer | $0.025 | $18.00                          | Path-based routing                      |                    |
+| ECR Storage       | ~5 GB           | -                                        | $0.50                                   | Lifecycle policies |
+| VPC (IPs, etc)    | Public IPs      | $0.005 | $3.50                           | In-use vs idle pricing                  |                    |
+| S3 + DynamoDB     | State           | -                                        | $0.01                                   | Minimal data       |
+| **Total**   |                 | **~$0.27/hr** | **~$153/mo** | **On-demand destroy strategy**    |                    |
 
 ### Cost Per Deploy (60-hour infrastructure lifetime)
 
@@ -836,6 +886,7 @@ Savings: 58% ($30 saved per deploy)
 ### Cost Optimization Strategies
 
 **1. On-Demand Infrastructure**
+
 ```bash
 Deploy for demos: ./scripts/deploy.sh
 Destroy after: ./scripts/destroy.sh (mode 1)
@@ -844,21 +895,25 @@ AWS Credits: $85 ÷ $11.54/deploy = ~7-8 full deploys
 ```
 
 **2. Kubernetes Version Selection**
+
 - K8s 1.33: Standard support until Jul 2026 ($0.10/hr)
 - K8s 1.31: Extended support charges ($0.50/hr)
 - **Savings**: $0.40/hr = 80% reduction in EKS costs
 
 **3. Right-Sized Resources**
+
 - t3.small vs t3.medium: 50% savings
 - Pod resource limits prevent overprovisioning
 - Horizontal scaling only when needed
 
 **4. Lifecycle Policies**
+
 - ECR: Keep only last 10 images
 - CloudWatch logs: Disabled by default
 - S3 versioning without lifecycle (state files are tiny)
 
 **5. Destroy Strategy**
+
 - Mode 1: Keeps VPC/ECR, enables 10-min redeploy
 - Mode 2: Complete cleanup for account closure
 - Cost when destroyed: $0.01/month (just ECR storage)
@@ -876,6 +931,7 @@ AWS Credits: $85 ÷ $11.54/deploy = ~7-8 full deploys
 **Solution**: `deploy.sh` has automatic retry logic (3 attempts, 10s delay, re-plans after each failure)
 
 **Manual Fix**:
+
 ```bash
 # Re-run deploy script (idempotent)
 ./scripts/deploy.sh
@@ -892,6 +948,7 @@ terraform apply
 **Solution**: `destroy.sh` pre-cleanup phase removes these automatically.
 
 **Manual Fix**:
+
 ```bash
 # Remove finalizers manually
 kubectl patch ingress purehouse-ingress -n purehouse \
@@ -907,6 +964,7 @@ kubectl delete targetgroupbindings --all -n purehouse
 **Solution**: Scripts detect and can release automatically (with confirmation).
 
 **Manual Fix**:
+
 ```bash
 # List current locks
 aws dynamodb scan --table-name purehouse-terraform-lock
@@ -922,6 +980,7 @@ terraform force-unlock <lock-id>
 **Solution**: `destroy.sh` uses `aws eks wait cluster-deleted` to wait automatically.
 
 **Manual Fix**:
+
 ```bash
 # Wait for deletion
 aws eks wait cluster-deleted --name purehouse-production --region us-east-2
@@ -944,6 +1003,7 @@ kubectl get configmap aws-auth -n kube-system -o yaml | grep github-actions
 ```
 
 **Manual Fix**:
+
 ```bash
 # Re-apply Terraform kubernetes module
 cd terraform/environments/production
@@ -953,26 +1013,27 @@ terraform apply -target=module.kubernetes
 ### Best Practices
 
 1. **Always use scripts**, not manual Terraform
+
    - Scripts have safety checks and error handling
    - Consistent state management
    - Automatic retry logic
-
 2. **Check status before operations**
+
    - `./scripts/status.sh` shows current state
    - Prevents unexpected conflicts
    - Verifies cost-saving mode
-
 3. **Use destroy mode 1 for demos**
+
    - Keeps ECR images for fast redeploy
    - Saves 99.99% of costs between demos
    - 10-minute redeploy vs 25-minute full deploy
-
 4. **Monitor costs regularly**
+
    - `status.sh` shows real-time cost estimation
    - AWS Console billing dashboard
    - Set up budget alerts in AWS
-
 5. **Commit frequently during development**
+
    - S3 backend auto-saves state
    - But verify with `terraform state list`
    - Keep local backup before major changes
@@ -980,6 +1041,7 @@ terraform apply -target=module.kubernetes
 ### Debugging Commands
 
 **Check infrastructure:**
+
 ```bash
 # Cluster status
 aws eks describe-cluster --name purehouse-production --region us-east-2
@@ -997,6 +1059,7 @@ kubectl get events -n purehouse --sort-by='.lastTimestamp'
 ```
 
 **Check Terraform state:**
+
 ```bash
 cd terraform/environments/production
 
@@ -1011,6 +1074,7 @@ terraform refresh
 ```
 
 **Check costs:**
+
 ```bash
 # Real-time status
 ./scripts/status.sh
@@ -1030,16 +1094,19 @@ aws ce get-cost-and-usage \
 ### Technology Stack
 
 **Infrastructure:**
+
 - AWS: EKS, ECR, VPC, ALB, IAM, S3, DynamoDB
 - Terraform: v1.5+ with modular architecture
 - Kubernetes: v1.33 on EKS
 - Docker: Multi-stage builds
 
 **CI/CD:**
+
 - GitHub Actions: Workflows with OIDC
 - Bash: Automation scripts with error handling
 
 **Application:**
+
 - Frontend: Next.js 14, TypeScript, Tailwind CSS
 - Backend: NestJS 10, MongoDB Atlas, Mongoose
 - Worker: Express.js, async processing
@@ -1047,6 +1114,7 @@ aws ce get-cost-and-usage \
 ### File Locations
 
 **Infrastructure as Code:**
+
 - `terraform/modules/vpc/` - VPC, subnets, NAT, IGW
 - `terraform/modules/eks/` - EKS cluster, node groups
 - `terraform/modules/ecr/` - Container registries
@@ -1054,24 +1122,27 @@ aws ce get-cost-and-usage \
 - `terraform/environments/production/` - Production config
 
 **Automation:**
+
 - `scripts/setup-aws.sh` - Bootstrap AWS resources
 - `scripts/deploy.sh` - Full deployment automation
 - `scripts/destroy.sh` - Infrastructure teardown
 - `scripts/status.sh` - Real-time monitoring
 
 **Application:**
+
 - `purehouse-frontend/` - Next.js application
 - `purehouse-backend/` - NestJS API
 - `purehouse-worker/` - Express worker service
 - `kubernetes/` - K8s manifests (deployments, services, ingress)
 
 **CI/CD:**
+
 - `.github/workflows/ci.yml` - Tests on PRs
 - `.github/workflows/cd.yml` - Deploy on main push
 
 ---
 
-**Last Updated:** November 9, 2025  
+**Last Updated:** November 9, 2025
 **Maintained by:** Julian Dicante
 
 For high-level overview and portfolio presentation, see [README.md](../README.md).
