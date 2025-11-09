@@ -169,11 +169,11 @@ else
     IMAGE_NAME="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT_NAME}-production-frontend:latest"
     
     if [ "$USE_BUILDX" = true ]; then
-        $BUILD_COMMAND -t $IMAGE_NAME .
+        $BUILD_COMMAND --build-arg NEXT_PUBLIC_API_URL=/api -t $IMAGE_NAME .
         echo "Pushing frontend image..."
         docker push $IMAGE_NAME
     else
-        $BUILD_COMMAND -t ${PROJECT_NAME}-frontend .
+        $BUILD_COMMAND --build-arg NEXT_PUBLIC_API_URL=/api -t ${PROJECT_NAME}-frontend .
         docker tag ${PROJECT_NAME}-frontend:latest $IMAGE_NAME
         docker push $IMAGE_NAME
     fi
