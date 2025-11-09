@@ -7,7 +7,8 @@ async function bootstrap() {
   app.enableCors();
 
   // Add a global prefix so all routes are served under /api
-  // e.g., GET /posts -> GET /api/posts
+  // The Ingress forwards /api/* to backend:3001/api/*
+  // e.g., User requests /api/posts -> Ingress -> backend:3001/api/posts
   app.setGlobalPrefix('api');
 
   // Enable shutdown hooks so Nest can gracefully handle SIGTERM (useful for K8s)
