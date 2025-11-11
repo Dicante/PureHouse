@@ -7,6 +7,8 @@
 [![Terraform](https://img.shields.io/badge/Terraform-IaC-7B42BC?logo=terraform&logoColor=white)](https://www.terraform.io/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Full_Stack-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![CI/CD](https://img.shields.io/badge/CI/CD-GitHub_Actions-2088FF?logo=github-actions&logoColor=white)](https://github.com/features/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Security](https://img.shields.io/badge/Security-OIDC-green.svg)](SECURITY.md)
 
 ---
 
@@ -28,49 +30,6 @@
 <table>
 <tr>
 <td width="50%">
-
-### Cloud Infrastructure
-- ✅ AWS EKS cluster design & management
-- ✅ Multi-AZ VPC architecture
-- ✅ Application Load Balancer with path routing
-- ✅ IAM roles with least-privilege principle
-- ✅ Cost engineering ($33/deploy → $11/deploy)
-
-</td>
-<td width="50%">
-
-### Automation & IaC
-- ✅ Modular Terraform architecture
-- ✅ Remote state management (S3 + DynamoDB)
-- ✅ Bash automation scripts with retry logic
-- ✅ GitHub Actions CI/CD pipelines
-- ✅ OIDC authentication (no AWS keys in GitHub)
-
-</td>
-</tr>
-<tr>
-<td width="50%">
-
-### Kubernetes
-- ✅ EKS cluster with managed node groups
-- ✅ Deployments with rolling update strategy
-- ✅ Ingress controllers (AWS ALB Controller)
-- ✅ ConfigMaps & Secrets management
-- ✅ Health checks & resource limits
-
-</td>
-<td width="50%">
-
-### Development & Operations
-- ✅ Microservices architecture (3 services)
-- ✅ Containerization with multi-stage builds
-- ✅ Private ECR registries with lifecycle policies
-- ✅ Full-stack TypeScript (Next.js, NestJS, Express)
-- ✅ MongoDB Atlas integration
-
-</td>
-</tr>
-</table>
 
 ---
 
@@ -195,6 +154,7 @@ cd ../../..
 - No code changes required, just Terraform variable update
 
 **Results:**
+
 ```
 Before: $33.84/deploy  (EKS Extended Support $22.30)
 After:  $11.54/deploy  (EKS Standard $6.00)
@@ -276,7 +236,7 @@ Savings: 66% cost reduction
 ```
 PureHouse/
 │
-├── terraform/                   # Infrastructure as Code
+├── terraform/                  # Infrastructure as Code
 │   ├── modules/
 │   │   ├── vpc/                # Multi-AZ networking
 │   │   ├── eks/                # Kubernetes cluster
@@ -297,17 +257,17 @@ PureHouse/
 │   └── ingress/ingress.yaml
 │
 ├── scripts/                    # Production-ready automation
-│   ├── setup-aws.sh           # Bootstrap AWS resources
-│   ├── deploy.sh              # Full deployment with retry logic
-│   ├── destroy.sh             # Smart teardown (2 modes)
-│   └── status.sh              # Infrastructure monitoring
+│   ├── setup-aws.sh            # Bootstrap AWS resources
+│   ├── deploy.sh               # Full deployment with retry logic
+│   ├── destroy.sh              # Smart teardown (2 modes)
+│   └── status.sh               # Infrastructure monitoring
 │
 ├── docs/
-│   └── TECHNICAL.md           # Deep technical documentation
+│   └── TECHNICAL.md            # Deep technical documentation
 │
-├── purehouse-frontend/        # Next.js SSR application
-├── purehouse-backend/         # NestJS REST API
-└── purehouse-worker/          # Express async processor
+├── purehouse-frontend/         # Next.js SSR application
+├── purehouse-backend/          # NestJS REST API
+└── purehouse-worker/           # Express async processor
 ```
 
 ---
@@ -330,8 +290,6 @@ PureHouse/
 ## 🔗 Live Demo & Contact
 
 **GitHub Repository:** [github.com/Dicante/PureHouse](https://github.com/Dicante/PureHouse)
-
-**Portfolio Website:** *Coming soon*
 
 **Live Demo:** *Available on-demand* - Infrastructure deployed for interviews/demos and destroyed after to manage costs.
 
@@ -361,12 +319,10 @@ I built this project to demonstrate my ability to design, implement, and operate
 
 ## 📜 License
 
-MIT License - This is a portfolio project demonstrating DevOps skills.
+MIT License - See [LICENSE](LICENSE) file for details.
+
+**This is a portfolio project demonstrating DevOps engineering skills.**
+
+While the code is open source for learning purposes, the architecture design, automation strategies, and infrastructure patterns represent significant personal work. If you use this project as inspiration or reference, please provide attribution.
 
 ---
-
-<div align="center">
-
-**⭐ If you're a recruiter and this project demonstrates the skills you're looking for, I'd love to discuss how I can contribute to your team! ⭐**
-
-</div>
