@@ -2,8 +2,8 @@
 
 > **Full-stack blog application demonstrating enterprise-grade DevOps skills on AWS**
 
-[![AWS EKS](https://img.shields.io/badge/AWS-EKS_1.33-FF9900?logo=amazon-aws&logoColor=white)](https://aws.amazon.com/eks/)
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-1.33-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
+[![AWS EKS](https://img.shields.io/badge/AWS-EKS_1.32-FF9900?logo=amazon-aws&logoColor=white)](https://aws.amazon.com/eks/)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-1.32-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
 [![Terraform](https://img.shields.io/badge/Terraform-IaC-7B42BC?logo=terraform&logoColor=white)](https://www.terraform.io/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Full_Stack-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![CI/CD](https://img.shields.io/badge/CI/CD-GitHub_Actions-2088FF?logo=github-actions&logoColor=white)](https://github.com/features/actions)
@@ -16,20 +16,12 @@
 
 **Built to demonstrate real-world DevOps engineering skills**, not just tutorials. This project showcases:
 
-✅ **Complete AWS infrastructure** designed from scratch using Terraform
-✅ **Production-ready Kubernetes** on EKS with multi-AZ high availability
-✅ **Automated CI/CD pipeline** with modern OIDC authentication (zero stored credentials)
-✅ **Cost optimization** - Reduced infrastructure costs by 66% through architecture decisions
-✅ **100% automation** - Deploy and destroy complete infrastructure with single commands
-✅ **Real problem-solving** - Overcame production challenges like EKS timing issues and resource cleanup
-
----
-
-## 💼 DevOps Skills Demonstrated
-
-<table>
-<tr>
-<td width="50%">
+- ✅ **Complete AWS infrastructure** designed from scratch using Terraform
+- ✅ **Production-ready Kubernetes** on EKS with multi-AZ high availability
+- ✅ **Automated CI/CD pipeline** with modern OIDC authentication (zero stored credentials)
+- ✅ **Cost optimization** - Reduced infrastructure costs by 66% through architecture decisions
+- ✅ **100% automation** - Deploy and destroy complete infrastructure with single commands
+- ✅ **Real problem-solving** - Overcame production challenges like EKS timing issues and resource cleanup
 
 ---
 
@@ -65,7 +57,7 @@
 │                    AWS Infrastructure                       │
 │                                                             │
 │    ┌──────────────────────────────────────────────────┐     │
-│    │              EKS Cluster (K8s 1.33)              │     │
+│    │              EKS Cluster (K8s 1.32)              │     │
 │    │                                                  │     │
 │    │        Multi-AZ Node Group (2x t3.small)         │     │
 │    │         ├─ us-east-2a: Worker Node               │     │
@@ -74,17 +66,64 @@
 │                                                             │
 │    ┌─────────────┐   ┌─────────────┐   ┌──────────────┐     │
 │    │     ECR     │   │     VPC     │   │  NAT Gateway │     │
-│    │  Registries │   │  10.0.0.0/16│   │              │     │
+│    │  Registries │   │ 10.0.0.0/16 │   │              │     │
 │    └─────────────┘   └─────────────┘   └──────────────┘     │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 **Key Design Decisions:**
 
-- **Kubernetes 1.33** - Latest stable version with standard support (saves $22.30/deploy vs 1.31 extended support)
+- **Kubernetes 1.32** - Latest stable version with standard support (saves $22.30/deploy vs 1.31 extended support)
 - **Multi-AZ deployment** - High availability across 2 availability zones
 - **Private node placement** - Enhanced security with NAT gateway for egress
 - **External MongoDB** - Simplifies cluster lifecycle management for demos
+
+---
+
+## 📸 Visual Proof
+
+### Application in Action
+
+![PureHouse Blog Demo](docs/images/app-demo.gif)
+*Full-stack blog application - Create, edit, and delete posts in real-time - Show logs in pod Worker*
+
+---
+
+### AWS Infrastructure Running
+
+#### EKS Cluster Dashboard
+
+![EKS Cluster](docs/images/eks-cluster.png)
+*Kubernetes 1.32 cluster with Multi-AZ node groups running in production*
+
+#### EC2 Worker Nodes
+
+![EC2 Instances](docs/images/ec2-nodes.png)
+*2x t3.small instances distributed across us-east-2a and us-east-2b availability zones*
+
+#### Application Load Balancer
+
+![ALB Targets](docs/images/alb-healthy.png)
+*Application Load Balancer with healthy targets across multiple availability zones*
+
+#### Kubernetes Pods Running
+
+![Kubectl Pods](docs/images/kubectl-pods.png)
+*All microservices (frontend, backend, worker) running healthy in purehouse namespace*
+
+---
+
+### Deployment Automation
+
+![Deployment Success](docs/images/deploy-success.png)
+*Zero-touch deployment completes in ~18 minutes with automatic health checks and retry logic*
+
+---
+
+### CI/CD Pipeline
+
+![GitHub Actions](docs/images/github-actions-ci.png)
+*Automated CI/CD pipeline with Docker builds, tests, and deployment to AWS EKS*
 
 ---
 
@@ -149,8 +188,8 @@ cd ../../..
 
 **Solution Implemented:**
 
-- Changed Kubernetes version from 1.31 → 1.33
-- 1.33 has standard support until July 2026
+- Changed Kubernetes version from 1.31 → 1.32
+- 1.32 has standard support until June 2026
 - No code changes required, just Terraform variable update
 
 **Results:**
@@ -212,22 +251,22 @@ Savings: 66% cost reduction
 | **EKS aws-auth timing**              | Automatic retry with 10s delay & re-planning      | 100% automated deploys             |
 | **Ingress cleanup blocking destroy** | Pre-cleanup script removes ALB/TargetGroups first | Destroy completes in 7min reliably |
 | **Terraform state locks**            | Auto-detect and release stuck locks               | Zero manual intervention           |
-| **Cost overrun**                     | Kubernetes version change (1.31→1.33)            | 66% cost reduction                 |
-| **Image rebuild time**               | Two-tier destroy (keep ECR images)                | Redeploy in 10min vs 25min         |
+| **Cost overrun**                     | Kubernetes version change (1.31→1.32)            | 66% cost reduction                 |
+| **Image rebuild time**               | Two-tier destroy (keep ECR images)                | Redeploy in 15min vs 25min         |
 
 ---
 
 ## 📊 Project Metrics
 
-| Metric                      | Value                                            |
-| --------------------------- | ------------------------------------------------ |
-| **Infrastructure**    | AWS EKS Kubernetes 1.33, Multi-AZ VPC            |
-| **Deployment Time**   | 12 minutes (first deploy), 10 minutes (redeploy) |
-| **Destroy Time**      | 7 minutes (cost-saving mode)                     |
-| **Cost Per Deploy**   | $11.54 (optimized from $33.84)                   |
-| **Automation Level**  | 100% - Zero manual steps                         |
-| **Lines of IaC**      | ~1,200 lines of Terraform across 4 modules       |
-| **Services Deployed** | 3 microservices (Frontend, Backend, Worker)      |
+| Metric                      | Value                                             |
+| --------------------------- | ------------------------------------------------- |
+| **Infrastructure**    | AWS EKS Kubernetes 1.32, Multi-AZ VPC             |
+| **Deployment Time**   | 18 minutes (first deploy), 10 minutes (redeploy) |
+| **Destroy Time**      | 7 minutes (cost-saving mode)                      |
+| **Cost Per Deploy**   | $11.54 (optimized from $33.84)                    |
+| **Automation Level**  | 100% - Zero manual steps                          |
+| **Lines of IaC**      | ~1,200 lines of Terraform across 4 modules        |
+| **Services Deployed** | 3 microservices (Frontend, Backend, Worker)       |
 
 ---
 
